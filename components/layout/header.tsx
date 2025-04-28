@@ -2,26 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Menu, X, LogOut, Plus } from "lucide-react"
+import { Search, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
-import { useUser } from "@/components/user-context"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 const navigation = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/courses" },
-  { name: "Forums", href: "/forums" },
   { name: "Webinars / Live Sessions", href: "/webinars" },
   { name: "Profile", href: "/profile" },
   { name: "Contact Us", href: "/contact" },
@@ -31,13 +21,6 @@ const navigation = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
-  const router = useRouter()
-  const { isAuthenticated, role, logout } = useUser()
-
-  const handleLogout = () => {
-    logout()
-    router.push("/")
-  }
 
   return (
     <header className="bg-background border-b">
@@ -59,7 +42,7 @@ export default function Header() {
             <Menu className="h-6 w-6" aria-hidden="true" />
           </button>
         </div>
-        <div className="hidden lg:flex lg:gap-x-8">
+        <div className="hidden lg:flex lg:gap-x-8 items-center">
           {navigation.map((item) => (
             <Link
               key={item.name}
@@ -67,78 +50,24 @@ export default function Header() {
               className={cn(
                 "text-sm font-semibold leading-6 transition-colors",
                 pathname === item.href ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground",
+                item.name === "News" && "mr-6" // SADECE News'a sağ boşluk veriyoruz!
               )}
             >
               {item.name}
             </Link>
           ))}
-
-          {/* Show Create button for instructors */}
-          {isAuthenticated && role === "instructor" && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Plus className="h-4 w-4" /> Create
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => router.push("/instructor/create-course")}>
-                  Create Course
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/instructor/create-webinar")}>
-                  Create Webinar
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center">
-          <div className="flex items-center justify-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search..." className="w-[150px] pl-8 rounded-full bg-muted/50 h-9" />
-            </div>
-            <ModeToggle />
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input type="search" placeholder="Search..." className="w-[200px] pl-8 rounded-full bg-muted/50" />
           </div>
-          <div className="flex items-center gap-2 ml-4">
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">My Account ({role})</Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
-                  {role === "student" && (
-                    <DropdownMenuItem onClick={() => router.push("/my-courses")}>My Courses</DropdownMenuItem>
-                  )}
-                  {role === "instructor" && (
-                    <>
-                      <DropdownMenuItem onClick={() => router.push("/instructor/my-courses")}>
-                        My Courses
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push("/instructor/my-webinars")}>
-                        My Webinars
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                    <LogOut className="mr-2 h-4 w-4" /> Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/sign-in">Sign in</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/log-in">Log in</Link>
-                </Button>
-              </>
-            )}
+          <ModeToggle />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" asChild>
+              <Link href="/sign-in">Sign in</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/log-in">Log in</Link>
+            </Button>
           </div>
         </div>
       </nav>
@@ -174,27 +103,6 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
-
-                {/* Show Create options for instructors */}
-                {isAuthenticated && role === "instructor" && (
-                  <>
-                    <div className="pt-2 pb-1 px-3 text-sm font-semibold text-muted-foreground">Instructor Actions</div>
-                    <Link
-                      href="/instructor/create-course"
-                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 hover:bg-muted"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Create Course
-                    </Link>
-                    <Link
-                      href="/instructor/create-webinar"
-                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 hover:bg-muted"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Create Webinar
-                    </Link>
-                  </>
-                )}
               </div>
               <div className="py-6">
                 <div className="relative mb-4">
@@ -202,28 +110,12 @@ export default function Header() {
                   <Input type="search" placeholder="Search..." className="w-full pl-8 rounded-full bg-muted/50" />
                 </div>
                 <div className="flex flex-col gap-2">
-                  {isAuthenticated ? (
-                    <>
-                      <div className="text-sm mb-2">
-                        Signed in as: <span className="font-semibold">{role}</span>
-                      </div>
-                      <Button variant="outline" asChild className="w-full" onClick={() => router.push("/profile")}>
-                        <Link href="/profile">My Profile</Link>
-                      </Button>
-                      <Button variant="destructive" className="w-full" onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" /> Log out
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" asChild className="w-full">
-                        <Link href="/sign-in">Sign in</Link>
-                      </Button>
-                      <Button asChild className="w-full">
-                        <Link href="/log-in">Log in</Link>
-                      </Button>
-                    </>
-                  )}
+                  <Button variant="outline" asChild className="w-full">
+                    <Link href="/sign-in">Sign in</Link>
+                  </Button>
+                  <Button asChild className="w-full">
+                    <Link href="/log-in">Log in</Link>
+                  </Button>
                 </div>
               </div>
             </div>
